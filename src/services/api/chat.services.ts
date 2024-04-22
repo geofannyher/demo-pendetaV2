@@ -1,5 +1,9 @@
 import axios from "axios";
-import { TChatDataProps, TResetChat } from "../../utils/types/chat.type";
+import {
+  TChatDataProps,
+  THistoryChatAdmin,
+  TResetChat,
+} from "../../utils/types/chat.type";
 
 export const chatRes = async ({
   message,
@@ -32,20 +36,47 @@ export const chatResNew = async ({
   is_rag,
 }: TChatDataProps) => {
   try {
-    const response = await axios.post(`${import.meta.env.VITE_APP_CHATT}chat`, {
-      star: star,
-      model: model,
-      temperature: 0.7,
-      id,
-      message: message,
-      chat_limit: 1,
-      is_rag,
-    });
+    const response = await axios.post(
+      `${import.meta.env.VITE_APP_CHATT}chat`,
+      {
+        star: star,
+        model: model,
+        temperature: 1,
+        id,
+        message: message,
+        chat_limit: 1,
+        is_rag,
+      }
+      // {
+      //   responseType: "stream",
+      // }
+    );
     return response;
   } catch (error) {
     return error;
   }
 };
+
+// export const chatResNew = async ({
+//   message,
+//   star,
+//   model,
+//   id,
+//   is_rag,
+// }: TChatDataProps) => {
+//   try {
+//     const eventSource = new EventSource(
+//       `${
+//         import.meta.env.VITE_APP_CHATT
+//       }achat?message=${message}&star=${star}&model=${model}&temperature=0.7&id=${id}&chat_limit=1&is_rag=${is_rag}`
+//     );
+//     console.log(eventSource);
+//     return eventSource;
+//   } catch (error) {
+//     console.error("Error:", error);
+//     return null;
+//   }
+// };
 
 export const generateRandomString = async () => {
   const charset =
@@ -56,6 +87,21 @@ export const generateRandomString = async () => {
     result += charset[randomIndex];
   }
   return result;
+};
+
+export const chatAdmin = async ({ id, star }: THistoryChatAdmin) => {
+  try {
+    const response = await axios.post(
+      `${import.meta.env.VITE_APP_CHATT}history`,
+      {
+        star: star,
+        id,
+      }
+    );
+    return response;
+  } catch (error) {
+    return error;
+  }
 };
 
 export const resetStarId = async ({ id, star }: TResetChat) => {
