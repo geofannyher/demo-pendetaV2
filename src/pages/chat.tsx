@@ -4,19 +4,16 @@ import notificationSound from "../assets/notif.mp3";
 import { notification } from "antd";
 import { IMessage } from "../utils/interface/chat.interface";
 import {
-  // chatRes,
   chatResNew,
   generateRandomString,
 } from "../services/api/chat.services";
 import { AiChat, UserChat } from "../components/chat";
 import LoadingComponent from "../components/loader";
 import Navbar from "../components/navbar";
-// import { textToSpeech } from "../services/api/elevenlabs.service";
 const ChatPage: React.FC = () => {
   const [messages, setMessages] = useState<IMessage[]>([]);
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
   const [api, context] = notification.useNotification();
-  // const [audioUrl, setaudioUrl] = useState<Blob>();
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
       if (
@@ -38,17 +35,6 @@ const ChatPage: React.FC = () => {
     }
   };
 
-  // const getRandomID = async () => {
-  //   const idUser = await generateRandomString();
-  //   localStorage.setItem("idPendeta", idUser);
-  // };
-  // const checkAIResponse = async () => {
-  //   const aiMessages = messages.filter((message) => message.sender === "ai");
-  //   if (aiMessages.length > 2) {
-  //     getRandomID();
-  //   }
-  // };
-
   useEffect(() => {
     randomChar();
     setTimeout(() => {
@@ -61,7 +47,6 @@ const ChatPage: React.FC = () => {
     }, 700);
   }, []);
   useEffect(() => {
-    // checkAIResponse();
     scrollToBottom();
   }, [messages]);
 
@@ -85,18 +70,9 @@ const ChatPage: React.FC = () => {
     const audio = new Audio(notificationSound);
     audio.play();
 
-    // const res: any = await chatRes({
-    //   message: messageInput,
-    //   star: "ubahtanya",
-    //   id: idUserSession ? idUserSession : "",
-    //   model: "gpt-4-turbo-preview",
-    //   is_rag: "true",
-    // });
-
     const resNew: any = await chatResNew({
-      // message: res?.data?.data,
       message: messageInput,
-      star: "pdteras",
+      star: "pdteras2 ",
       id: idUserSession ? idUserSession : "",
       model: "gpt-4-turbo-preview",
       is_rag: "false",
