@@ -72,12 +72,13 @@ const ChatPage: React.FC = () => {
 
     const resNew: any = await chatResNew({
       message: messageInput,
-      star: "pdteras2 ",
+      star: "pdteras",
       id: idUserSession ? idUserSession : "",
       model: "gpt-4-turbo-preview",
       is_rag: "false",
     });
 
+    // console.log(resNew?.data);
     if (resNew && resNew?.data?.data) {
       setMessages((prevMessages: any) => {
         return [
