@@ -154,7 +154,10 @@ const ChatPage: React.FC = () => {
         {messages.map((message, index) => (
           <div key={index}>
             {message.sender === "user" ? (
-              <UserChat message={message.text} />
+              <div>
+                <UserChat message={message.text} />
+                <div ref={messagesEndRef} />
+              </div>
             ) : (
               <div>
                 <div ref={messagesEndRef} />
