@@ -12,10 +12,16 @@ const ChatPage: React.FC = () => {
   const [api, context] = notification.useNotification();
   const [finalMsg, setfinalMsg] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      if (
+        "scrollBehavior" in document.documentElement.style &&
+        window.innerWidth > 768
+      ) {
+        messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      } else {
+        messagesEndRef.current.scrollIntoView();
+      }
     }
   };
 
@@ -150,11 +156,14 @@ const ChatPage: React.FC = () => {
             {message.sender === "user" ? (
               <UserChat message={message.text} />
             ) : (
-              <AiChat
-                message={message.text}
-                audioUrl={finalMsg}
-                isLastAIChat={index === messages.length - 1}
-              />
+              <div>
+                <div ref={messagesEndRef} />
+                <AiChat
+                  message={message.text}
+                  audioUrl={finalMsg}
+                  isLastAIChat={index === messages.length - 1}
+                />
+              </div>
             )}
           </div>
         ))}
