@@ -4,6 +4,7 @@ import AuthLayout from "./pages/auth/authlayout";
 import Login from "./pages/auth/login";
 import MainLayout from "./pages/main.layout";
 import AdminLayout from "./pages/admin/admin.layout";
+import AdminChat from "./pages/admin/admin.chat";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         </Route>
         <Route path="/" element={<MainLayout />}>
           <Route path="chat" element={<ChatPage />} />
+          <Route path="adminchat" element={<AdminChat />} />
           <Route path="adminavatara" element={<AdminLayout />} />
         </Route>
       </Routes>

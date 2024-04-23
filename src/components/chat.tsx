@@ -5,32 +5,33 @@ import remarkGfm from "remark-gfm";
 import { textToSpeech } from "../services/api/elevenlabs.service";
 import { useEffect, useState } from "react";
 import { supabase } from "../services/supabase/connection";
-export const AiChat = ({ message, isLastAIChat }: TChatProps) => {
+export const AiChat = ({ message, isLastAIChat, audioUrl }: TChatProps) => {
   const [audioSrc, setAudioSrc] = useState("");
   const [switchValue, setSwitchValue] = useState();
   const [status, setStatus] = useState(false);
 
+  // console.log(audioUrl);
   useEffect(() => {
     fetchSwitchValue();
     // Panggil fetchTextToSpeech hanya saat pesan terakhir dari AIChat pertama kali ditampilkan
-    if (isLastAIChat && !audioSrc && switchValue) {
-      console.log(switchValue, "hai");
+    if (isLastAIChat && !audioSrc && switchValue && audioUrl) {
       fetchTextToSpeech();
     }
-  }, [message, isLastAIChat, audioSrc, switchValue]);
+  }, [isLastAIChat, audioSrc, switchValue, audioUrl]);
 
   const fetchTextToSpeech = async () => {
     try {
       setStatus(true);
-      const result: any = await textToSpeech(message);
+      const result: any = await textToSpeech(audioUrl);
       const audioBlob = new Blob([result.data], { type: "audio/mpeg" });
-      const audioUrl = URL.createObjectURL(audioBlob);
-      setAudioSrc(audioUrl);
+      const audioSrc = URL.createObjectURL(audioBlob);
+      setAudioSrc(audioSrc);
       setStatus(false);
     } catch (error) {
-      console.error("Failed to convert text to speech:", error);
+      console.error("Failed to convert text to speech:");
     }
   };
+
   const fetchSwitchValue = async () => {
     try {
       const { data, error } = await supabase
@@ -57,7 +58,7 @@ export const AiChat = ({ message, isLastAIChat }: TChatProps) => {
           />
           <div
             style={{ whiteSpace: "pre-line" }}
-            className="w-auto max-w-2xl rounded-br-xl rounded-tl-xl rounded-tr-xl bg-chatAi p-4 shadow-sm"
+            className="w-auto max-w-2xl rounded-br-xl rounded-tl-xl overflow-auto rounded-tr-xl bg-chatAi p-4 shadow-sm"
           >
             <Markdown
               components={{
@@ -90,6 +91,27 @@ export const UserChat = ({ message }: TChatProps) => {
     <div className="flex justify-end py-2">
       <div className="w-auto  max-w-xs rounded-bl-xl rounded-tl-xl rounded-tr-xl bg-mainColor p-4 text-white shadow-sm">
         <p>{message}</p>
+      </div>
+    </div>
+  );
+};
+
+export const AdminHIstoryChat = ({ message }: TChatProps) => {
+  return (
+    <div className="flex justify-start py-2">
+      <div className="flex items-start">
+        <div className="flex gap-2 items-start">
+          <img
+            src={ai}
+            className="h-10 w-10 items-center justify-center rounded-full object-cover"
+          />
+          <div
+            style={{ whiteSpace: "pre-line" }}
+            className="w-auto max-w-2xl rounded-br-xl rounded-tl-xl text-sm overflow-auto rounded-tr-xl bg-chatAi p-4 shadow-sm"
+          >
+            {message}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 export type TChatProps = {
   message: string;
   isLastAIChat?: any;
-  audioUrl?: Blob;
+  audioUrl?: string;
 };
 export type TChatDataProps = {
   star: string;
@@ -9,6 +9,11 @@ export type TChatDataProps = {
   is_rag?: string;
   message: string;
   id: string;
+};
+
+export type THistoryChatAdmin = {
+  id: string;
+  star: string;
 };
 
 export type TResetChat = {
