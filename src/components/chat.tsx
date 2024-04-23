@@ -20,15 +20,19 @@ export const AiChat = ({ message, isLastAIChat, audioUrl }: TChatProps) => {
   }, [isLastAIChat, audioSrc, switchValue, audioUrl]);
 
   const fetchTextToSpeech = async () => {
-    try {
-      setStatus(true);
-      const result: any = await textToSpeech(audioUrl);
-      const audioBlob = new Blob([result.data], { type: "audio/mpeg" });
-      const audioSrc = URL.createObjectURL(audioBlob);
-      setAudioSrc(audioSrc);
-      setStatus(false);
-    } catch (error) {
-      console.error("Failed to convert text to speech:");
+    if (audioUrl !== undefined) {
+      try {
+        setStatus(true);
+        const result: any = await textToSpeech(audioUrl);
+        const audioBlob = new Blob([result.data], { type: "audio/mpeg" });
+        const audioSrc = URL.createObjectURL(audioBlob);
+        setAudioSrc(audioSrc);
+        setStatus(false);
+      } catch (error) {
+        console.error("Failed to convert text to speech:");
+      }
+    } else {
+      console.log("text undifined");
     }
   };
 
