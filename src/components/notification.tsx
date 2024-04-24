@@ -6,8 +6,7 @@ export const AlertDanger = ({ msg }: TAlertDangerProps) => {
       className="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-400 "
       role="alert"
     >
-      <span className="font-medium">Maaf email atau password anda salah !</span>{" "}
-      {msg}
+      <span className="font-medium">Maaf password anda salah !</span> {msg}
     </div>
   );
 };

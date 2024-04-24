@@ -1,7 +1,18 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import Sidebar from "./sidebar";
+import { useEffect } from "react";
 
 const AdminLayout = () => {
+  const isAdmin = localStorage.getItem("role");
+  const navigate = useNavigate();
+  const checkAdmin = () => {
+    if (isAdmin !== "admin" || isAdmin == undefined) {
+      navigate("/adminlogin");
+    }
+  };
+  useEffect(() => {
+    checkAdmin();
+  }, []);
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar />

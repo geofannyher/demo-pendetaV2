@@ -8,4 +8,5 @@ export const getSession = () => {
 
 export const clearSession = () => {
   localStorage.removeItem("idPendeta");
+  localStorage.removeItem("role");
 };

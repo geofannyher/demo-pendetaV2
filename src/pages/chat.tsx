@@ -203,7 +203,6 @@ import { IMessage } from "../utils/interface/chat.interface";
 import { AiChat, UserChat } from "../components/chat";
 import Navbar from "../components/navbar";
 import LoadingComponent from "../components/loader";
-import { generateRandomString } from "../services/api/chat.services";
 import { supabase } from "../services/supabase/connection";
 
 const ChatPage: React.FC = () => {
@@ -211,6 +210,7 @@ const ChatPage: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [api, context] = notification.useNotification();
   const [isLoading, setIsLoading] = useState(false);
+  const idUserSession = localStorage.getItem("idPendeta");
 
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
@@ -225,16 +225,7 @@ const ChatPage: React.FC = () => {
     }
   };
 
-  const idUserSession = localStorage.getItem("idPendeta");
-  const randomChar = async () => {
-    if (idUserSession === null) {
-      const res = await generateRandomString();
-      localStorage.setItem("idPendeta", res);
-    }
-  };
-
   useEffect(() => {
-    randomChar();
     setTimeout(() => {
       setMessages([
         {
@@ -276,7 +267,7 @@ const ChatPage: React.FC = () => {
             star: "pdteras",
             model: "gpt-4-turbo",
             temperature: 1,
-            id: "1",
+            id: idUserSession,
             message: messageInput,
             chat_limit: 1,
             is_rag: "false",

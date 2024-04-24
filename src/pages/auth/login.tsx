@@ -4,7 +4,8 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 import { notification } from "antd";
 import { AlertDanger, AlertSuccess } from "../../components/notification";
-import { generateRandomString } from "../../services/api/chat.services";
+import { getIdSession } from "../../services/supabase/session.service";
+import { saveSession } from "../../shared/Session";
 const Login = () => {
   const [msg, setMsg] = useState(0);
   const [show, setShow] = useState(false);
@@ -17,10 +18,10 @@ const Login = () => {
     event.preventDefault();
     const pass = import.meta.env.VITE_APP_PASS;
     if (event.target[0]?.value == pass) {
-      navigate("/chat");
-      const idUser = await generateRandomString();
-      localStorage.setItem("idPendeta", idUser);
+      const res = await getIdSession();
+      saveSession(res?.data?.localid);
       setLoading(false);
+      navigate("/chat");
     } else {
       setLoading(false);
       setMsg(1);

@@ -1,6 +1,8 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const Sidebar = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const menus = [
     {
       to: "/adminavatara",
@@ -33,12 +35,16 @@ const Sidebar = () => {
       ),
     },
   ];
-  const location = useLocation();
 
   return (
     <div className="bg-[#5751c8] w-20 p-2 flex flex-col items-center justify-between h-screen text-white">
       <div className="py-4">
-        <h1 className="font-semibold text-sm">Admin Panel</h1>
+        <h1
+          className="font-bold cursor-pointer hover:text-gray-300 duration-300 transition text-sm"
+          onClick={() => navigate("/chat")}
+        >
+          Admin Panel
+        </h1>
         <ul className="mt-4 space-y-2">
           {menus.map((item, index) => (
             <li key={index}>

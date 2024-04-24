@@ -6,6 +6,7 @@ import MainLayout from "./pages/main.layout";
 import AdminLayout from "./pages/admin/admin.layout";
 import AdminChat from "./pages/admin/admin.chat";
 import DashboardAdmin from "./pages/admin/dashboard";
+import LoginAdmin from "./pages/admin/login";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/" element={<MainLayout />}>
           <Route path="chat" element={<ChatPage />} />
           <Route path="" element={<AdminLayout />}>
+            <Route path="/adminlogin" element={<LoginAdmin />} />
             <Route path="adminavatara" element={<DashboardAdmin />} />
             <Route path="history" element={<AdminChat />} />
           </Route>

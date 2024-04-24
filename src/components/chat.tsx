@@ -5,6 +5,7 @@ import remarkGfm from "remark-gfm";
 import { textToSpeech } from "../services/api/elevenlabs.service";
 import { useEffect, useState } from "react";
 import { supabase } from "../services/supabase/connection";
+
 export const AiChat = ({ message, isLastAIChat, audioUrl }: TChatProps) => {
   const [audioSrc, setAudioSrc] = useState("");
   const [displayedMessage, setDisplayedMessage] = useState("");
