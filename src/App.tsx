@@ -17,8 +17,8 @@ function App() {
         </Route>
         <Route path="/" element={<MainLayout />}>
           <Route path="chat" element={<ChatPage />} />
+          <Route path="/adminlogin" element={<LoginAdmin />} />
           <Route path="" element={<AdminLayout />}>
-            <Route path="/adminlogin" element={<LoginAdmin />} />
             <Route path="adminavatara" element={<DashboardAdmin />} />
             <Route path="history" element={<AdminChat />} />
           </Route>
