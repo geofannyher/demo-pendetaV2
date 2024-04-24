@@ -7,7 +7,7 @@ const Sidebar = () => {
       name: "Dashboard",
       icon: (
         <svg
-          className="w-5 h-5 "
+          className="w-5 h-5"
           aria-hidden="true"
           xmlns="http://www.w3.org/2000/svg"
           fill="currentColor"
@@ -19,11 +19,11 @@ const Sidebar = () => {
       ),
     },
     {
-      to: "/adminchat",
+      to: "/history",
       name: "Admin Chat",
       icon: (
         <svg
-          className="w-5 h-5 "
+          className="w-5 h-5"
           viewBox="0 0 24 24"
           fill="currentColor"
           xmlns="http://www.w3.org/2000/svg"
@@ -36,22 +36,21 @@ const Sidebar = () => {
   const location = useLocation();
 
   return (
-    <div className={`fixed top-0 left-0 z-0 h-screen`}>
-      <div className={`h-full px-3 w-20 py-4 overflow-y-auto bg-[#5751c8]`}>
-        <h1 className="py-4 font-semibold text-sm text-white">Admin Panel</h1>
-        <ul className="space-y-2 font-medium">
+    <div className="bg-[#5751c8] w-20 p-2 flex flex-col items-center justify-between h-screen text-white">
+      <div className="py-4">
+        <h1 className="font-semibold text-sm">Admin Panel</h1>
+        <ul className="mt-4 space-y-2">
           {menus.map((item, index) => (
             <li key={index}>
               <Link to={item?.to}>
                 <div
-                  className={`flex items-center p-2 text-white justify-center rounded-lg transition duration-500 ${
+                  className={`p-2 rounded-lg flex justify-center ${
                     location.pathname === item.to
-                      ? "bg-indigo-800 text-white"
-                      : "dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                      ? "bg-indigo-800"
+                      : "hover:bg-gray-700"
                   }`}
                 >
                   {item?.icon}
-                  {/* <span className="ms-3 text-sm">{item.name}</span> */}
                 </div>
               </Link>
             </li>

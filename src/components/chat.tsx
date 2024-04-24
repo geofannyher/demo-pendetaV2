@@ -7,8 +7,24 @@ import { useEffect, useState } from "react";
 import { supabase } from "../services/supabase/connection";
 export const AiChat = ({ message, isLastAIChat, audioUrl }: TChatProps) => {
   const [audioSrc, setAudioSrc] = useState("");
+  const [displayedMessage, setDisplayedMessage] = useState("");
   const [switchValue, setSwitchValue] = useState();
   const [status, setStatus] = useState(false);
+
+  useEffect(() => {
+    setDisplayedMessage(""); // Reset displayed message on component mount or update
+    let currentIndex = 0;
+    const interval = setInterval(() => {
+      if (currentIndex <= message.length) {
+        setDisplayedMessage(message.substring(0, currentIndex));
+        currentIndex++;
+      } else {
+        clearInterval(interval);
+      }
+    }, 5); // Adjust the interval for speed of text rendering
+
+    return () => clearInterval(interval); // Clean up on component unmount
+  }, [message]);
 
   // console.log(audioUrl);
   useEffect(() => {
@@ -72,7 +88,7 @@ export const AiChat = ({ message, isLastAIChat, audioUrl }: TChatProps) => {
               }}
               remarkPlugins={[remarkGfm]}
             >
-              {message}
+              {displayedMessage}
             </Markdown>
             {status
               ? "Loading Audio..."

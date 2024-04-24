@@ -1,12 +1,14 @@
-import DashboardAdmin from "./dashboard";
+import { Outlet } from "react-router-dom";
 import Sidebar from "./sidebar";
 
 const AdminLayout = () => {
   return (
-    <>
+    <div className="flex h-screen overflow-hidden">
       <Sidebar />
-      <DashboardAdmin />
-    </>
+      <div className="flex-1 overflow-y-auto bg-white">
+        <Outlet />
+      </div>
+    </div>
   );
 };
 

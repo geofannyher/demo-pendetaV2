@@ -28,29 +28,6 @@ export const chatRes = async ({
   }
 };
 
-export const chatResNew = async ({
-  message,
-  star,
-  model,
-  id,
-  is_rag,
-}: TChatDataProps) => {
-  try {
-    const response = await axios.post(`${import.meta.env.VITE_APP_CHATT}chat`, {
-      star: star,
-      model: model,
-      temperature: 1,
-      id,
-      message: message,
-      chat_limit: 1,
-      is_rag,
-    });
-    return response;
-  } catch (error) {
-    return error;
-  }
-};
-
 // export const chatResNew = async ({
 //   message,
 //   star,
@@ -59,27 +36,50 @@ export const chatResNew = async ({
 //   is_rag,
 // }: TChatDataProps) => {
 //   try {
-//     const response = await fetch(`${import.meta.env.VITE_APP_CHATT}achat`, {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//       },
-//       body: JSON.stringify({
-//         star,
-//         model,
-//         temperature: 1,
-//         id,
-//         message,
-//         chat_limit: 1,
-//         is_rag,
-//       }),
+//     const response = await axios.post(`${import.meta.env.VITE_APP_CHATT}chat`, {
+//       star: star,
+//       model: model,
+//       temperature: 1,
+//       id,
+//       message: message,
+//       chat_limit: 1,
+//       is_rag,
 //     });
-
 //     return response;
 //   } catch (error) {
 //     return error;
 //   }
 // };
+
+export const chatResNew = async ({
+  message,
+  star,
+  model,
+  id,
+  is_rag,
+}: TChatDataProps) => {
+  try {
+    const response = await fetch(`${import.meta.env.VITE_APP_CHATT}achat`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        star,
+        model,
+        temperature: 1,
+        id,
+        message,
+        chat_limit: 1,
+        is_rag,
+      }),
+    });
+
+    return response;
+  } catch (error) {
+    return error;
+  }
+};
 
 export const generateRandomString = async () => {
   const charset =

@@ -196,24 +196,22 @@
 //   );
 // };
 
-// export default ChatPage;
-
 import React, { useState, useEffect, useRef } from "react";
 import { IoIosSend } from "react-icons/io";
-import notificationSound from "../assets/notif.mp3";
 import { notification } from "antd";
 import { IMessage } from "../utils/interface/chat.interface";
-import {
-  chatResNew,
-  generateRandomString,
-} from "../services/api/chat.services";
 import { AiChat, UserChat } from "../components/chat";
-import LoadingComponent from "../components/loader";
 import Navbar from "../components/navbar";
+import LoadingComponent from "../components/loader";
+import { generateRandomString } from "../services/api/chat.services";
+import { supabase } from "../services/supabase/connection";
+
 const ChatPage: React.FC = () => {
   const [messages, setMessages] = useState<IMessage[]>([]);
-  const messagesEndRef = useRef<null | HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const [api, context] = notification.useNotification();
+  const [isLoading, setIsLoading] = useState(false);
+
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
       if (
@@ -235,17 +233,6 @@ const ChatPage: React.FC = () => {
     }
   };
 
-  const getRandomID = async () => {
-    const idUser = await generateRandomString();
-    localStorage.setItem("idPendeta", idUser);
-  };
-  const checkAIResponse = async () => {
-    const aiMessages = messages.filter((message) => message.sender === "ai");
-    if (aiMessages.length > 2) {
-      getRandomID();
-    }
-  };
-
   useEffect(() => {
     randomChar();
     setTimeout(() => {
@@ -258,78 +245,141 @@ const ChatPage: React.FC = () => {
     }, 700);
   }, []);
   useEffect(() => {
-    checkAIResponse();
     scrollToBottom();
   }, [messages]);
 
-  const handleForm = async (event: any) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const messageInput = event?.target[0]?.value.trim();
-    event.target[0].value = "";
+    const messageInput = event.currentTarget.message.value.trim();
 
     if (!messageInput) {
       return api.error({ message: "Kolom pesan tidak boleh kosong" });
     }
-    const userMessage = { text: messageInput, sender: "user" };
-    const loadingMessage = { isLoading: true };
 
-    setMessages((prevMessages: any) => [
-      ...prevMessages,
-      userMessage,
-      loadingMessage,
-    ]);
+    setIsLoading(true);
+    // Menambahkan pesan pengguna ke dalam daftar messages dengan status "user"
+    const userMessage: IMessage = { text: messageInput, sender: "user" };
+    setMessages((prevMessages) => [...prevMessages, userMessage]);
 
-    const audio = new Audio(notificationSound);
-    audio.play();
+    event.currentTarget.reset(); // Mengosongkan input setelah mengirim pesan
 
-    const resNew: any = await chatResNew({
-      message: messageInput,
-      star: "pdteras",
-      id: idUserSession ? idUserSession : "",
-      model: "gpt-4-turbo",
-      is_rag: "true",
-    });
+    try {
+      // Kirim permintaan ke API chat untuk mendapatkan respons
+      const response: any = await fetch(
+        `${import.meta.env.VITE_APP_CHATT}achat`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            star: "pdteras",
+            model: "gpt-4-turbo",
+            temperature: 1,
+            id: "1",
+            message: messageInput,
+            chat_limit: 1,
+            is_rag: "false",
+          }),
+        }
+      );
 
-    if (resNew && resNew?.data?.data) {
-      setMessages((prevMessages: any) => {
-        return [
-          ...prevMessages.filter((m: any) => !m.isLoading),
-          { text: resNew?.data?.data || "AI tidak merespon", sender: "ai" },
-        ];
-      });
-      const audio = new Audio(notificationSound);
-      audio.play();
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let currentBotMessage = ""; // Variabel untuk menyimpan pesan AI yang sedang terbentuk
+
+      // Loop untuk membaca data streaming dari respons
+      while (true) {
+        const { value, done } = await reader.read();
+
+        if (done) {
+          break;
+        }
+
+        const chunk = decoder.decode(value); // Mendekode blok data menjadi teks UTF-8
+        const messages = chunk.split("\n");
+
+        // Loop untuk memproses setiap pesan yang diterima
+        for (const message of messages) {
+          if (message.startsWith("data: ")) {
+            const jsonMessage = message.substring("data: ".length);
+
+            try {
+              const parsedMessage = JSON.parse(jsonMessage);
+
+              if (parsedMessage.choices && parsedMessage.choices.length > 0) {
+                const content = parsedMessage.choices
+                  .map((choice: any) => choice?.delta?.content)
+                  .join(""); // Menggabungkan konten pesan AI
+
+                // Menambahkan bagian pesan AI yang terbentuk ke dalam variabel currentBotMessage
+                currentBotMessage += content;
+                scrollToBottom();
+              }
+            } catch (error) {
+              console.error("Error parsing JSON message:", error);
+            }
+          }
+        }
+      }
+
+      await supabase.from("chat").upsert([
+        {
+          id_user: 4,
+          text: messageInput,
+          sender: "user",
+        },
+        {
+          id_user: 4,
+          text: currentBotMessage || "AI tidak merespon",
+          sender: "ai",
+        },
+      ]);
+
+      // Setelah semua pesan AI terbentuk, tambahkan pesan AI ke dalam daftar messages
+      if (currentBotMessage) {
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          { text: currentBotMessage, sender: "ai" },
+        ]);
+      }
+    } catch (error) {
+      console.error("Fetch error:", error);
     }
+    setIsLoading(false);
   };
 
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
   return (
-    <div className="flex h-[100dvh] lg:h-screen md:h-screen flex-col bg-white">
+    <div className="flex h-screen flex-col bg-white">
       <Navbar />
       {context}
-      <div className="hide-scrollbar container mx-auto flex-1 space-y-2 overflow-y-auto p-4 ">
-        {messages.map((message, index) =>
-          message?.isLoading ? (
-            <>
-              <LoadingComponent key={index} />
-              <div ref={messagesEndRef} />
-            </>
-          ) : message?.sender === "user" ? (
-            <div key={index}>
-              <UserChat message={message?.text} />
-            </div>
-          ) : (
-            <div key={index}>
+      <div className="container hide-scrollbar mx-auto flex-1 space-y-2 overflow-y-auto p-4">
+        {messages.map((message, index) => (
+          <div key={index}>
+            {message.sender === "user" ? (
+              <UserChat message={message.text} />
+            ) : (
               <AiChat
-                message={message?.text}
+                message={message.text}
                 isLastAIChat={index === messages.length - 1}
               />
-              <div ref={messagesEndRef} />
-            </div>
-          )
-        )}
+            )}
+          </div>
+        ))}
+        {isLoading && <LoadingComponent />}{" "}
+        {/* Tampilkan LoadingComponent jika isLoading true */}
+        <div ref={messagesEndRef} />
       </div>
-      <div className=" container mx-auto w-full p-4 shadow-sm">
-        <form onSubmit={handleForm}>
+      <div className="container mx-auto w-full p-4 shadow-sm">
+        <form onSubmit={handleSubmit}>
           <div className="relative">
             <input
               type="text"
@@ -352,3 +402,158 @@ const ChatPage: React.FC = () => {
 };
 
 export default ChatPage;
+
+// import React, { useState, useEffect, useRef } from "react";
+// import { IoIosSend } from "react-icons/io";
+// import notificationSound from "../assets/notif.mp3";
+// import { notification } from "antd";
+// import { IMessage } from "../utils/interface/chat.interface";
+// import {
+//   chatResNew,
+//   generateRandomString,
+// } from "../services/api/chat.services";
+// import { AiChat, UserChat } from "../components/chat";
+// import LoadingComponent from "../components/loader";
+// import Navbar from "../components/navbar";
+// const ChatPage: React.FC = () => {
+//   const [messages, setMessages] = useState<IMessage[]>([]);
+//   const messagesEndRef = useRef<null | HTMLDivElement>(null);
+//   const [api, context] = notification.useNotification();
+//   const scrollToBottom = () => {
+//     if (messagesEndRef.current) {
+//       if (
+//         "scrollBehavior" in document.documentElement.style &&
+//         window.innerWidth > 768
+//       ) {
+//         messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+//       } else {
+//         messagesEndRef.current.scrollIntoView();
+//       }
+//     }
+//   };
+
+//   const idUserSession = localStorage.getItem("idPendeta");
+//   const randomChar = async () => {
+//     if (idUserSession === null) {
+//       const res = await generateRandomString();
+//       localStorage.setItem("idPendeta", res);
+//     }
+//   };
+
+//   const getRandomID = async () => {
+//     const idUser = await generateRandomString();
+//     localStorage.setItem("idPendeta", idUser);
+//   };
+//   const checkAIResponse = async () => {
+//     const aiMessages = messages.filter((message) => message.sender === "ai");
+//     if (aiMessages.length > 2) {
+//       getRandomID();
+//     }
+//   };
+
+//   useEffect(() => {
+//     randomChar();
+//     setTimeout(() => {
+//       setMessages([
+//         {
+//           text: "Shalom, mari kita tumbuh bersama dalam memahami kebesaran dan kasih Allah kepada kita. Apakah saudara memiliki pertanyaan atau ingin mendalami lebih jauh tentang Kenosis, Logos, dan Monotheisme?",
+//           sender: "ai",
+//         },
+//       ]);
+//     }, 700);
+//   }, []);
+//   useEffect(() => {
+//     checkAIResponse();
+//     scrollToBottom();
+//   }, [messages]);
+
+//   const handleForm = async (event: any) => {
+//     event.preventDefault();
+//     const messageInput = event?.target[0]?.value.trim();
+//     event.target[0].value = "";
+
+//     if (!messageInput) {
+//       return api.error({ message: "Kolom pesan tidak boleh kosong" });
+//     }
+//     const userMessage = { text: messageInput, sender: "user" };
+//     const loadingMessage = { isLoading: true };
+
+//     setMessages((prevMessages: any) => [
+//       ...prevMessages,
+//       userMessage,
+//       loadingMessage,
+//     ]);
+
+//     const audio = new Audio(notificationSound);
+//     audio.play();
+
+//     const resNew: any = await chatResNew({
+//       message: messageInput,
+//       star: "pdteras",
+//       id: idUserSession ? idUserSession : "",
+//       model: "gpt-4-turbo",
+//       is_rag: "true",
+//     });
+
+//     if (resNew && resNew?.data?.data) {
+//       setMessages((prevMessages: any) => {
+//         return [
+//           ...prevMessages.filter((m: any) => !m.isLoading),
+//           { text: resNew?.data?.data || "AI tidak merespon", sender: "ai" },
+//         ];
+//       });
+//       const audio = new Audio(notificationSound);
+//       audio.play();
+//     }
+//   };
+
+//   return (
+//     <div className="flex h-[100dvh] lg:h-screen md:h-screen flex-col bg-white">
+//       <Navbar />
+//       {context}
+//       <div className="hide-scrollbar container mx-auto flex-1 space-y-2 overflow-y-auto p-4 ">
+//         {messages.map((message, index) =>
+//           message?.isLoading ? (
+//             <>
+//               <LoadingComponent key={index} />
+//               <div ref={messagesEndRef} />
+//             </>
+//           ) : message?.sender === "user" ? (
+//             <div key={index}>
+//               <UserChat message={message?.text} />
+//             </div>
+//           ) : (
+//             <div key={index}>
+//               <AiChat
+//                 message={message?.text}
+//                 isLastAIChat={index === messages.length - 1}
+//               />
+//               <div ref={messagesEndRef} />
+//             </div>
+//           )
+//         )}
+//       </div>
+//       <div className=" container mx-auto w-full p-4 shadow-sm">
+//         <form onSubmit={handleForm}>
+//           <div className="relative">
+//             <input
+//               type="text"
+//               id="message"
+//               name="message"
+//               className="block w-full pr-20 rounded-xl border border-gray-300 bg-gray-50 p-4 text-sm text-gray-900"
+//               placeholder="Masukkan pesan anda.."
+//             />
+//             <button
+//               type="submit"
+//               className="absolute bottom-2.5 end-2.5 rounded-lg bg-mainColor px-4 py-2 text-sm font-medium text-white shadow-md transition duration-300 hover:bg-hoverBtn"
+//             >
+//               <IoIosSend />
+//             </button>
+//           </div>
+//         </form>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default ChatPage;
