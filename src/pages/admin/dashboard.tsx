@@ -1,12 +1,9 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../services/supabase/connection";
 import { generateRandomString } from "../../services/api/chat.services";
-import { getSession, saveSession } from "../../shared/Session";
+import { getSession } from "../../shared/Session";
 import useNotification from "antd/es/notification/useNotification";
-import {
-  changelocalid,
-  getIdSession,
-} from "../../services/supabase/session.service";
+import { changelocalid } from "../../services/supabase/session.service";
 
 const DashboardAdmin = () => {
   const [switchValue, setSwitchValue] = useState(false);
@@ -73,16 +70,12 @@ const DashboardAdmin = () => {
     if (res) {
       const respons = await changelocalid({ newUserId: res });
       if (respons?.status === 204) {
-        const resses = await getIdSession();
-        if (resses?.status === 200) {
-          saveSession(resses?.data?.localid);
-          setTimeout(() => {
-            location.reload();
-          }, 600);
-          setLoadingid(false);
+        setTimeout(() => {
+          location.reload();
+        }, 600);
+        setLoadingid(false);
 
-          return api.success({ message: "Success Change ID" });
-        }
+        return api.success({ message: "Success Change ID" });
       }
     }
   };
