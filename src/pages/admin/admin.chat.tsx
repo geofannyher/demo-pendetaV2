@@ -1,77 +1,12 @@
-// import { useEffect, useRef, useState } from "react";
-// import { chatAdmin } from "../../services/api/chat.services";
-// import { getSession } from "../../shared/Session";
-// import { AdminHIstoryChat } from "../../components/chat";
-// import LoadingComponent from "../../components/loader";
-
-// const AdminChat = () => {
-//   const messagesEndRef = useRef<null | HTMLDivElement>(null);
-//   const [history, setHistory] = useState<string>("");
-//   const [content, setContent] = useState<string>("");
-//   const idUser = getSession();
-
-//   const scrollToBottom = () => {
-//     if (messagesEndRef.current) {
-//       if (
-//         "scrollBehavior" in document.documentElement.style &&
-//         window.innerWidth > 768
-//       ) {
-//         messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-//       } else {
-//         messagesEndRef.current.scrollIntoView();
-//       }
-//     }
-//   };
-
-//   const getHistory = async () => {
-//     const res: any = await chatAdmin({
-//       id: idUser ? idUser : "",
-//       star: "pdteras",
-//     });
-//     if (res?.data?.data) {
-//       setHistory(res?.data?.data?.history[1]?.content);
-//       setContent(res?.data?.data?.history[2]?.content);
-//     }
-//   };
-//   const fetchData = async () => {
-//     await getHistory();
-//     scrollToBottom();
-//   };
-//   useEffect(() => {
-//     fetchData();
-//   }, []);
-
-//   return (
-//     <div className="flex h-[dvh] lg:h-screen md:h-screen flex-col bg-white">
-//       <div className="container mx-auto p-4">
-//         <h3 className="font-semibold">History Admin</h3>
-//       </div>
-//       <div className="hide-scrollbar container mx-auto flex-1 space-y-2 overflow-y-auto p-4">
-//         {history && content ? (
-//           <>
-//             <AdminHIstoryChat message={`${content}${history}`} />
-//             <div ref={messagesEndRef} />
-//           </>
-//         ) : (
-//           <>
-//             <LoadingComponent />
-//           </>
-//         )}
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default AdminChat;
-
-import { useEffect, useRef, useState } from "react";
-import { supabase } from "../../services/supabase/connection";
+import React, { useEffect, useRef, useState } from "react";
+import axios from "axios";
+import { getSession } from "../../shared/Session";
 
 const AdminChat = () => {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [chatHistory, setChatHistory] = useState<any[]>([]);
   const [searchKeyword, setSearchKeyword] = useState<string>("");
-
+  const idUser = getSession();
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
@@ -80,18 +15,38 @@ const AdminChat = () => {
 
   const fetchChatHistory = async () => {
     try {
-      const { data, error } = await supabase
-        .from("chat")
-        .select("*")
-        .order("id", { ascending: true });
+      const res = await axios.post(import.meta.env.VITE_APP_CHATT + "history", {
+        id: idUser,
+        star: "pdteras",
+      });
 
-      if (error) {
-        throw error;
-      }
+      const konteksMessage = res?.data?.data?.history[1]?.content;
 
-      if (data && data.length > 0) {
-        setChatHistory(data);
-      }
+      const userMessages = res.data.data.coversation?.user.map(
+        (message: string, index: number) => ({
+          sender: "user",
+          message,
+          index,
+        })
+      );
+      const aiMessages = res.data.data.coversation?.ai.map(
+        (message: string, index: number) => ({
+          sender: "ai",
+          message,
+          konteksMessage:
+            index === res.data.data.coversation?.ai.length - 1
+              ? konteksMessage
+              : "",
+          index,
+        })
+      );
+
+      // Gabungkan pesan user dan pesan AI ke dalam satu array
+      const newConversation = [...userMessages, ...aiMessages];
+
+      newConversation.sort((a, b) => a.index - b.index);
+
+      setChatHistory(newConversation);
     } catch (error: any) {
       console.error("Error fetching chat history:", error.message);
     }
@@ -109,12 +64,33 @@ const AdminChat = () => {
     setSearchKeyword(event.target.value);
   };
 
+  const renderHighlightedText = (text: string) => {
+    if (!searchKeyword.trim()) return text; // Jika kata kunci pencarian kosong, kembalikan teks asli
+
+    const regex = new RegExp(`(${searchKeyword.trim()})`, "gi"); // Buat ekspresi reguler dari kata kunci pencarian (global dan case-insensitive)
+    const parts = text.split(regex); // Pisahkan teks berdasarkan kata kunci pencarian
+
+    return parts.map((part, index) => {
+      if (regex.test(part)) {
+        // Bagian ini adalah bagian teks yang cocok dengan kata kunci (disorot)
+        return (
+          <span key={index} className="bg-yellow-200 border p-1">
+            {part}
+          </span>
+        );
+      } else {
+        // Bagian ini adalah bagian teks asli (tidak cocok dengan kata kunci)
+        return <span key={index}>{part}</span>;
+      }
+    });
+  };
+
   const filteredChatHistory = chatHistory.filter((message) =>
-    message.text.toLowerCase().includes(searchKeyword.toLowerCase())
+    message.message.toLowerCase().includes(searchKeyword.toLowerCase())
   );
 
   return (
-    <div className="flex h-[100dvh] flex-col bg-white">
+    <div className="flex h-[100vh] flex-col bg-white">
       <div className="container mx-auto p-4">
         <h3 className="font-semibold">History Admin</h3>
         <input
@@ -134,13 +110,15 @@ const AdminChat = () => {
             }`}
           >
             <div
-              className={` p-2 rounded-lg ${
-                message.sender === "user"
-                  ? "mr-2 bg-gray-100"
-                  : "ml-2 bg-gray-300"
-              }`}
+              className={`p-2 rounded-lg ${
+                message.sender === "user" ? "mr-2" : "ml-2"
+              } bg-gray-300`}
             >
-              {message.text}
+              {renderHighlightedText(message.message)}
+              <div className="text-sm font-semibold">
+                {message?.konteksMessage &&
+                  `KONTEKS : ${message?.konteksMessage}`}
+              </div>
             </div>
           </div>
         ))}
