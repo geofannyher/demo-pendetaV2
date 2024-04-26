@@ -1,13 +1,25 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
-import { getSession } from "../../shared/Session";
 import { LuArrowDown } from "react-icons/lu";
+import { getIdSession } from "../../services/supabase/session.service";
+import { notification } from "antd";
 
 const AdminChat = () => {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [chatHistory, setChatHistory] = useState<any[]>([]);
   const [searchKeyword, setSearchKeyword] = useState<string>("");
-  const idUser = getSession();
+  const [loading, setLoading] = useState<boolean>(true);
+  const [api, context] = notification.useNotification();
+
+  const getIdUser = async () => {
+    const resses = await getIdSession();
+    if (resses?.status == 200) {
+      fetchChatHistory(resses?.data?.localid);
+    } else {
+      api.error({ message: "Gagal mendapatkan id user" });
+    }
+  };
+
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
       if (
@@ -20,10 +32,12 @@ const AdminChat = () => {
       }
     }
   };
-  const fetchChatHistory = async () => {
+
+  const fetchChatHistory = async (id: string) => {
     try {
+      setLoading(true);
       const res = await axios.post(import.meta.env.VITE_APP_CHATT + "history", {
-        id: idUser,
+        id: id,
         star: "pdteras",
       });
 
@@ -53,13 +67,14 @@ const AdminChat = () => {
       newConversation.sort((a, b) => a.index - b.index);
 
       setChatHistory(newConversation);
+      setLoading(false);
     } catch (error: any) {
       console.error("Error fetching chat history:", error.message);
     }
   };
 
   useEffect(() => {
-    fetchChatHistory();
+    getIdUser();
   }, []); // Panggil fetchChatHistory saat komponen dimuat
 
   useEffect(() => {
@@ -97,6 +112,7 @@ const AdminChat = () => {
 
   return (
     <div className="flex h-[100dvh] flex-col bg-white">
+      {context}
       <div className="container mx-auto p-4">
         <h3 className="font-semibold">History Admin</h3>
         <input
@@ -108,30 +124,33 @@ const AdminChat = () => {
         />
       </div>
       <div className="hide-scrollbar container mx-auto flex-1 space-y-2 overflow-y-auto p-4">
-        {filteredChatHistory.map((message, index) => (
-          <div
-            key={index}
-            className={`flex ${
-              message.sender === "user" ? "justify-end" : "justify-start"
-            }`}
-          >
-            <div
-              className={`p-2 rounded-lg ${
-                message.sender === "user" ? "mr-2" : "ml-2"
-              } bg-gray-300`}
-            >
-              {renderHighlightedText(message.message)}
-              <div className="text-sm font-semibold">
-                {message?.konteksMessage &&
-                  `KONTEKS : ${message?.konteksMessage}`}
-              </div>
-            </div>
-          </div>
-        ))}
-        {filteredChatHistory.length === 0 && (
+        {loading ? (
+          <p className="text-gray-500 text-center mt-4">Loading...</p>
+        ) : filteredChatHistory.length === 0 ? (
           <p className="text-gray-500 text-center mt-4">
             Tidak ada hasil chat yang cocok.
           </p>
+        ) : (
+          filteredChatHistory.map((message, index) => (
+            <div
+              key={index}
+              className={`flex ${
+                message.sender === "user" ? "justify-end" : "justify-start"
+              }`}
+            >
+              <div
+                className={`p-2 rounded-lg ${
+                  message.sender === "user" ? "mr-2" : "ml-2"
+                } bg-gray-300`}
+              >
+                {renderHighlightedText(message.message)}
+                <div className="text-sm font-semibold">
+                  {message?.konteksMessage &&
+                    `KONTEKS : ${message?.konteksMessage}`}
+                </div>
+              </div>
+            </div>
+          ))
         )}
         <div ref={messagesEndRef} />
       </div>

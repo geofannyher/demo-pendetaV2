@@ -204,13 +204,15 @@ import { AiChat, UserChat } from "../components/chat";
 import Navbar from "../components/navbar";
 import LoadingComponent from "../components/loader";
 import { supabase } from "../services/supabase/connection";
+import { getIdSession } from "../services/supabase/session.service";
 
 const ChatPage: React.FC = () => {
   const [messages, setMessages] = useState<IMessage[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [api, context] = notification.useNotification();
   const [isLoading, setIsLoading] = useState(false);
-  const idUserSession = localStorage.getItem("idPendeta");
+  const [idUserSession, setId] = useState("");
+  // const idUserSession = localStorage.getItem("idPendeta");
 
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
@@ -225,6 +227,15 @@ const ChatPage: React.FC = () => {
     }
   };
 
+  const getIdUser = async () => {
+    const resses = await getIdSession();
+    if (resses?.status == 200) {
+      setId(resses?.data?.localid);
+    } else {
+      return api.error({ message: "Gagal mendapatkan id user" });
+    }
+  };
+
   useEffect(() => {
     setTimeout(() => {
       setMessages([
@@ -234,7 +245,9 @@ const ChatPage: React.FC = () => {
         },
       ]);
     }, 700);
+    getIdUser();
   }, []);
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
