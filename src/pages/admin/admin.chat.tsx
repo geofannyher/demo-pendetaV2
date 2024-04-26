@@ -1,12 +1,12 @@
-import React from "react";
-import { useEffect, useRef, useState } from "react";
-import { supabase } from "../../services/supabase/connection";
+import React, { useEffect, useRef, useState } from "react";
+import axios from "axios";
+import { getSession } from "../../shared/Session";
 
 const AdminChat = () => {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [chatHistory, setChatHistory] = useState<any[]>([]);
   const [searchKeyword, setSearchKeyword] = useState<string>("");
-
+  const idUser = getSession();
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
@@ -15,18 +15,38 @@ const AdminChat = () => {
 
   const fetchChatHistory = async () => {
     try {
-      const { data, error } = await supabase
-        .from("chat")
-        .select("*")
-        .order("id", { ascending: true });
+      const res = await axios.post(import.meta.env.VITE_APP_CHATT + "history", {
+        id: idUser,
+        star: "pdteras",
+      });
 
-      if (error) {
-        throw error;
-      }
+      const konteksMessage = res?.data?.data?.history[1]?.content;
 
-      if (data && data.length > 0) {
-        setChatHistory(data);
-      }
+      const userMessages = res.data.data.coversation?.user.map(
+        (message: string, index: number) => ({
+          sender: "user",
+          message,
+          index,
+        })
+      );
+      const aiMessages = res.data.data.coversation?.ai.map(
+        (message: string, index: number) => ({
+          sender: "ai",
+          message,
+          konteksMessage:
+            index === res.data.data.coversation?.ai.length - 1
+              ? konteksMessage
+              : "",
+          index,
+        })
+      );
+
+      // Gabungkan pesan user dan pesan AI ke dalam satu array
+      const newConversation = [...userMessages, ...aiMessages];
+
+      newConversation.sort((a, b) => a.index - b.index);
+
+      setChatHistory(newConversation);
     } catch (error: any) {
       console.error("Error fetching chat history:", error.message);
     }
@@ -66,7 +86,7 @@ const AdminChat = () => {
   };
 
   const filteredChatHistory = chatHistory.filter((message) =>
-    message.text.toLowerCase().includes(searchKeyword.toLowerCase())
+    message.message.toLowerCase().includes(searchKeyword.toLowerCase())
   );
 
   return (
@@ -94,7 +114,11 @@ const AdminChat = () => {
                 message.sender === "user" ? "mr-2" : "ml-2"
               } bg-gray-300`}
             >
-              {renderHighlightedText(message.text)}
+              {renderHighlightedText(message.message)}
+              <div className="text-sm font-semibold">
+                {message?.konteksMessage &&
+                  `KONTEKS : ${message?.konteksMessage}`}
+              </div>
             </div>
           </div>
         ))}
