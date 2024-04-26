@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { getSession } from "../../shared/Session";
+import { LuArrowDown } from "react-icons/lu";
 
 const AdminChat = () => {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -9,10 +10,16 @@ const AdminChat = () => {
   const idUser = getSession();
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      if (
+        "scrollBehavior" in document.documentElement.style &&
+        window.innerWidth > 768
+      ) {
+        messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      } else {
+        messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      }
     }
   };
-
   const fetchChatHistory = async () => {
     try {
       const res = await axios.post(import.meta.env.VITE_APP_CHATT + "history", {
@@ -34,9 +41,8 @@ const AdminChat = () => {
           sender: "ai",
           message,
           konteksMessage:
-            index === res.data.data.coversation?.ai.length - 1
-              ? konteksMessage
-              : "",
+            index === res.data.data.coversation?.ai.length - 1 &&
+            konteksMessage,
           index,
         })
       );
@@ -90,7 +96,7 @@ const AdminChat = () => {
   );
 
   return (
-    <div className="flex h-[100vh] flex-col bg-white">
+    <div className="flex h-[100dvh] flex-col bg-white">
       <div className="container mx-auto p-4">
         <h3 className="font-semibold">History Admin</h3>
         <input
@@ -129,6 +135,12 @@ const AdminChat = () => {
         )}
         <div ref={messagesEndRef} />
       </div>
+      <button
+        onClick={scrollToBottom}
+        className="fixed bottom-10 right-10 bg-[#5751c8] hover:bg-[#5751c8] transition duration-500 hover:scale-105 text-white px-4 py-2 rounded-full shadow-lg"
+      >
+        <LuArrowDown />
+      </button>
     </div>
   );
 };
