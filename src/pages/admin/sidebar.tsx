@@ -50,10 +50,10 @@ const Sidebar = () => {
             <li key={index}>
               <Link to={item?.to}>
                 <div
-                  className={`p-2 rounded-lg flex justify-center ${
+                  className={`p-2 rounded-lg flex justify-center  ${
                     location.pathname === item.to
                       ? "bg-indigo-800"
-                      : "hover:bg-gray-700"
+                      : "hover:bg-gray-700 transition duration-500 hover:scale-105"
                   }`}
                 >
                   {item?.icon}
