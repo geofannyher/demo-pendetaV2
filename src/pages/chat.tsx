@@ -212,6 +212,7 @@ const ChatPage: React.FC = () => {
   const [api, context] = notification.useNotification();
   const [isLoading, setIsLoading] = useState(false);
   const [idUserSession, setId] = useState("");
+  const [audioText, setAdioText] = useState("");
   // const idUserSession = localStorage.getItem("idPendeta");
 
   const scrollToBottom = () => {
@@ -351,6 +352,7 @@ const ChatPage: React.FC = () => {
           { text: currentBotMessage, sender: "ai" },
         ]);
       }
+      setAdioText(currentBotMessage);
     } catch (error) {
       console.error("Fetch error:", error);
     }
@@ -373,6 +375,7 @@ const ChatPage: React.FC = () => {
             ) : (
               <AiChat
                 message={message.text}
+                audioUrl={audioText}
                 isLastAIChat={index === messages.length - 1}
               />
             )}
