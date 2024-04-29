@@ -3,7 +3,10 @@ import { supabase } from "../../services/supabase/connection";
 import { generateRandomString } from "../../services/api/chat.services";
 import { getSession } from "../../shared/Session";
 import useNotification from "antd/es/notification/useNotification";
-import { changelocalid } from "../../services/supabase/session.service";
+import {
+  changelocalid,
+  getIdSession,
+} from "../../services/supabase/session.service";
 
 const DashboardAdmin = () => {
   const [switchValue, setSwitchValue] = useState(false);
@@ -18,9 +21,9 @@ const DashboardAdmin = () => {
   }, [id]);
 
   const getSes = async () => {
-    const res = getSession();
+    const res = await getIdSession();
     if (res) {
-      setId(res);
+      setId(res?.data?.localid);
     }
   };
 

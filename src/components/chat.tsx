@@ -94,7 +94,8 @@ export const AiChat = ({ message, isLastAIChat, audioUrl }: TChatProps) => {
             {status
               ? "Loading Audio..."
               : isLastAIChat &&
-                switchValue && (
+                switchValue &&
+                audioUrl && (
                   <audio controls>
                     <source src={audioSrc} type="audio/mpeg" />
                     Your browser does not support the audio element.
