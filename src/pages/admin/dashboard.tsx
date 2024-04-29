@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../services/supabase/connection";
 import { generateRandomString } from "../../services/api/chat.services";
-import { getSession } from "../../shared/Session";
 import useNotification from "antd/es/notification/useNotification";
 import {
   changelocalid,
