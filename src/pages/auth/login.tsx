@@ -19,7 +19,7 @@ const Login = () => {
     const pass = import.meta.env.VITE_APP_PASS;
     if (event.target[0]?.value == pass) {
       const res = await getIdSession();
-      saveSession(res?.data?.localid);
+      saveSession(res?.data?.localidV2);
       setLoading(false);
       navigate("/chat");
     } else {

@@ -14,7 +14,7 @@ const AdminChat = () => {
   const getIdUser = async () => {
     const resses = await getIdSession();
     if (resses?.status == 200) {
-      fetchChatHistory(resses?.data?.localid);
+      fetchChatHistory(resses?.data?.localidV2);
     } else {
       api.error({ message: "Gagal mendapatkan id user" });
     }

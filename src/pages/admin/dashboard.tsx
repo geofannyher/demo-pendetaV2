@@ -22,7 +22,7 @@ const DashboardAdmin = () => {
   const getSes = async () => {
     const res = await getIdSession();
     if (res) {
-      setId(res?.data?.localid);
+      setId(res?.data?.localidV2);
     }
   };
 
