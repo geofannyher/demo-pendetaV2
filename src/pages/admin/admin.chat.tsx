@@ -38,7 +38,7 @@ const AdminChat = () => {
       setLoading(true);
       const res = await axios.post(import.meta.env.VITE_APP_CHATT + "history", {
         id: id,
-        star: "pdteras",
+        star: "pdteras2",
       });
 
       const konteksMessage = res?.data?.data?.history[1]?.content;
