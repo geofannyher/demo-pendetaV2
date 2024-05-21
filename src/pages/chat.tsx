@@ -80,8 +80,8 @@ const ChatPage: React.FC = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            star: "pdteras",
-            model: "gpt-4-turbo-preview",
+            star: "pdteras2",
+            model: "gpt-4o",
             temperature: 1,
             id: idUserSession,
             message: messageInput,
