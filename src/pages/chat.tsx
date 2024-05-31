@@ -43,7 +43,7 @@ const ChatPage: React.FC = () => {
     setTimeout(() => {
       setMessages([
         {
-          text: "Shalom, mari kita tumbuh bersama dalam memahami kebesaran dan kasih Allah kepada kita. Apakah saudara memiliki pertanyaan atau ingin mendalami lebih jauh tentang Kenosis, Logos, dan Monotheisme?",
+          text: "Halo semua! Gak sabar nih untuk belajar lebih jauh soal cinta dan kebesaran Allah bersama kalian. Ada yang penasaran dengan Kenosis, Logos, atau Monotheisme? Yuk, diskusi bareng!",
           sender: "ai",
         },
       ]);

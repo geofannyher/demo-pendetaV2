@@ -21,7 +21,7 @@ const Navbar = () => {
                   />
                 </div>
                 <div className="flex flex-col text-white">
-                  <h1 className="font-semibold">Erastus Sabdono</h1>
+                  <h1 className="font-semibold">Erastus Junior</h1>
                 </div>
               </div>
             </div>
